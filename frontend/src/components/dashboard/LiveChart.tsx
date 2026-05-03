@@ -86,10 +86,26 @@ export function LiveChart({ stats }: LiveChartProps) {
           <Area
             type="monotone"
             dataKey="signals"
-            stroke="#6366F1"
-            strokeWidth={2}
+            stroke="var(--brand)"
+            strokeWidth={3}
             fill="url(#signalGradient)"
             animationDuration={300}
+            isAnimationActive={false} // Disable default animation for smoother real-time feel
+            dot={(props: any) => {
+              const { cx, cy, payload, index } = props;
+              if (index === data.length - 1) {
+                return (
+                  <g key="latest-dot">
+                    <circle cx={cx} cy={cy} r={6} fill="var(--brand)" opacity={0.3}>
+                      <animate attributeName="r" values="6;12;6" dur="1.5s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.3;0;0.3" dur="1.5s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx={cx} cy={cy} r={4} fill="var(--brand)" stroke="white" strokeWidth={2} />
+                  </g>
+                );
+              }
+              return null as any;
+            }}
           />
         </AreaChart>
       </ResponsiveContainer>

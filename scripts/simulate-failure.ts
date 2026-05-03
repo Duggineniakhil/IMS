@@ -12,6 +12,7 @@ const API_URL = process.env.API_URL || 'http://localhost:3001';
 
 interface SignalPayload {
   componentId: string;
+  signalId: string;
   componentType: string;
   errorCode: string;
   latencyMs: number;
@@ -58,6 +59,7 @@ async function phase1_rdbmsFailure(): Promise<void> {
   for (let i = 0; i < 150; i++) {
     const signal: SignalPayload = {
       componentId: 'RDBMS_PRIMARY',
+      signalId: `sig_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       componentType: 'RDBMS',
       errorCode: randomItem(errorCodes),
       latencyMs: 3500 + Math.random() * 2000,
@@ -105,6 +107,7 @@ async function phase2_cacheFailure(): Promise<void> {
   for (let i = 0; i < 80; i++) {
     const signal: SignalPayload = {
       componentId: 'CACHE_CLUSTER_01',
+      signalId: `sig_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       componentType: 'CACHE',
       errorCode: randomItem(errorCodes),
       latencyMs: 500 + Math.random() * 1500,
@@ -140,6 +143,7 @@ async function phase3_apiTimeout(): Promise<void> {
   for (let i = 0; i < 200; i++) {
     const signal: SignalPayload = {
       componentId: 'API_GATEWAY',
+      signalId: `sig_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       componentType: 'API',
       errorCode: randomItem(errorCodes),
       latencyMs: 5000 + Math.random() * 10000,

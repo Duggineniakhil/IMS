@@ -24,7 +24,13 @@ export function Header({ title, subtitle }: HeaderProps) {
     <header className="header-bar" style={{ background: 'transparent', borderBottom: 'none' }}>
       <div className="header-left">
         <div>
-          <h1 className="header-title">{title}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h1 className="header-title">{title}</h1>
+            <div className="badge badge-resolved" style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22C55E', padding: '2px 8px', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="pulse-dot active pulse-dot-resolved" style={{ width: '6px', height: '6px' }}></span>
+              LIVE
+            </div>
+          </div>
           {subtitle && <p className="header-subtitle">{subtitle}</p>}
         </div>
       </div>
