@@ -49,7 +49,7 @@ graph TB
 | **Vite** | Bundler | Instant HMR, native ESM dev server |
 | **React Query** | Data Fetching | Auto-refetch, cache invalidation, optimistic updates |
 | **Recharts** | Charts | Composable chart components built on D3 |
-| **Framer Motion** | Animations | Physics-based animations for polished UI |
+
 
 ## Project Structure
 
@@ -87,49 +87,31 @@ graph TB
 └── README.md                → This file
 ```
 
-## Setup Instructions
+## 🚀 Quick Start (Docker Compose)
 
-### Prerequisites
-
-- **Docker** & Docker Compose (v2+)
-- **Node.js 20** (LTS)
-- **npm** (v9+)
-
-### Quick Start
+The entire stack is containerized for easy evaluation.
 
 ```bash
-# 1. Clone and install
-git clone <repo-url> && cd ims
-cd backend && npm install
-cd ../frontend && npm install
-cd ..
-
-# 2. Environment
+# 1. Environment
 cp .env.example .env
 
-# 3. Start infrastructure (Postgres, MongoDB, Redis)
-docker-compose up -d postgres mongodb redis
+# 2. Build and start everything
+# This starts: Postgres, MongoDB, Redis, Backend, and Frontend
+docker-compose up --build -d
 
-# 4. Run Prisma migrations
-cd backend && npx prisma migrate dev --name init
-
-# 5. Seed sample data
-npx tsx ../scripts/seed.ts
-
-# 6. Start backend (terminal 1)
-npm run dev
-
-# 7. Start frontend (terminal 2)
-cd ../frontend && npm run dev
-
-# 8. Open dashboard
-# http://localhost:5173
+# 3. Seed sample data
+docker exec -it ims-backend npx tsx ../scripts/seed.ts
 ```
+
+- **Dashboard**: [http://localhost:5173](http://localhost:5173)
+- **API**: [http://localhost:3001](http://localhost:3001)
 
 ### Running Simulation
 
+To see the cascading failure and real-time dashboard updates in action:
+
 ```bash
-# In a separate terminal, with backend running:
+# With the system running:
 cd scripts
 npx tsx simulate-failure.ts
 ```
@@ -163,10 +145,20 @@ Signal throughput is measured using a **Redis sliding window counter** — `INCR
 | **Circuit Breaker** | `circuitBreaker.ts` | If PostgreSQL fails 5 consecutive times, the circuit opens for 30s, preventing cascading failures and giving the DB time to recover. |
 | **Repository** | Prisma Client | Abstracts database operations behind a typed ORM, making it easy to test and swap implementations. |
 
-## API Reference
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/signals` | `POST` | Ingest signal (Idempotent via `signalId`) |
+| `/api/workitems` | `GET` | List incidents (Paginated, Cached) |
+| `/api/workitems/:id` | `GET` | Incident details + raw signal audit log |
+| `/api/workitems/:id/status` | `PUT` | State machine transition |
+| `/api/workitems/:id/rca` | `POST` | Submit Root Cause Analysis |
+| `/api/dashboard/stats` | `GET` | Aggregated metrics (Hot-path cache) |
+| `/api/dashboard/stream` | `GET` | SSE real-time update stream |
+| `/health` | `GET` | Deep health check (DBs + Queue) |
 
-### `POST /api/signals`
-Ingest a monitoring signal.
+---
+
+### Sample Signal Ingestion
 ```bash
 curl -X POST http://localhost:3001/api/signals \
   -H "Content-Type: application/json" \
@@ -175,58 +167,8 @@ curl -X POST http://localhost:3001/api/signals \
     "signalId": "sig_unique_123",
     "componentType": "RDBMS",
     "errorCode": "CONN_TIMEOUT",
-    "latencyMs": 3500,
-    "payload": {}
+    "latencyMs": 3500
   }'
-# → 202 Accepted (or 409 if duplicate)
-```
-
-### `GET /api/workitems`
-List work items with pagination and filters.
-```bash
-curl "http://localhost:3001/api/workitems?status=OPEN&priority=P0&page=1&limit=10"
-```
-
-### `GET /api/workitems/:id`
-Get work item detail with linked signals.
-```bash
-curl http://localhost:3001/api/workitems/<uuid>
-```
-
-### `PUT /api/workitems/:id/status`
-Transition work item status.
-```bash
-curl -X PUT http://localhost:3001/api/workitems/<uuid>/status \
-  -H "Content-Type: application/json" \
-  -d '{"status":"INVESTIGATING"}'
-```
-
-### `POST /api/workitems/:id/rca`
-Submit Root Cause Analysis.
-```bash
-curl -X POST http://localhost:3001/api/workitems/<uuid>/rca \
-  -H "Content-Type: application/json" \
-  -d '{
-    "startTime":"2024-01-15T10:00:00Z",
-    "endTime":"2024-01-15T12:30:00Z",
-    "rootCauseCategory":"Infrastructure",
-    "fixApplied":"Increased connection pool max from 100 to 200 and restarted affected services",
-    "preventionSteps":"Added connection pool monitoring alerts and circuit breaker to prevent cascade"
-  }'
-```
-
-### `GET /api/dashboard/stats`
-Get aggregated dashboard statistics.
-```bash
-curl http://localhost:3001/api/dashboard/stats
-# → {"total":10,"byStatus":{"OPEN":3,"INVESTIGATING":2,...},"avgMttr":5400,...}
-```
-
-### `GET /health`
-System health check.
-```bash
-curl http://localhost:3001/health
-# → {"status":"ok","uptime":3600,"services":{"postgres":"connected",...},"queue":{...}}
 ```
 
 ## Testing
