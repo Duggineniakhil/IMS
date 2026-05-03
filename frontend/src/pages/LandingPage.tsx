@@ -36,9 +36,6 @@ export function LandingPage() {
           <span style={{ cursor: 'pointer' }}>Resources</span>
           <span style={{ cursor: 'pointer' }}>Pricing</span>
         </div>
-        <button className="btn" style={{ background: '#111', color: 'white', borderRadius: '99px', padding: '8px 24px' }}>
-          Sign In
-        </button>
       </nav>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
@@ -69,7 +66,7 @@ export function LandingPage() {
               padding: '14px 32px',
               fontWeight: 600
             }} onClick={() => navigate('/simulate')}>
-              ▶ Watch Video
+              ⚡ Run Simulation
             </button>
             <button className="btn btn-primary" style={{ padding: '14px 32px' }} onClick={() => navigate('/dashboard')}>
               Go to Dashboard
@@ -142,10 +139,10 @@ export function LandingPage() {
               <div style={{ height: '120px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '16px' }}></div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#F9FAFB', borderRadius: '8px', fontSize: '12px' }}>
-                  <span>Check log analysis</span> <span style={{ color: 'var(--brand)', fontWeight: 600 }}>+ Add</span>
+                  <span>Check log analysis</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#F9FAFB', borderRadius: '8px', fontSize: '12px' }}>
-                  <span>Check for recent updates</span> <span style={{ color: 'var(--brand)', fontWeight: 600 }}>+ Add</span>
+                  <span>Check for recent updates</span>
                 </div>
               </div>
             </div>
@@ -189,8 +186,9 @@ export function LandingPage() {
           <h2 style={{ fontSize: '40px', fontWeight: 800, marginBottom: '16px' }}>Ready to Get Started?</h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '40px' }}>Book a personalized 1:1 demo with our technical team for a free 14-day trial.</p>
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-            <button className="btn" style={{ background: 'white', color: 'black', padding: '12px 32px', fontWeight: 600 }}>Start Trial</button>
-            <button className="btn" style={{ background: 'var(--brand)', color: 'white', padding: '12px 32px', fontWeight: 600 }}>Book A Demo</button>
+            <button className="btn" style={{ background: 'white', color: 'black', padding: '12px 32px', fontWeight: 600 }} onClick={() => navigate('/dashboard')}>
+              Enter Dashboard
+            </button>
           </div>
         </div>
 
