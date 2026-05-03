@@ -6,6 +6,7 @@ import { z } from 'zod';
  */
 export const SignalPayloadSchema = z.object({
   componentId: z.string().min(1, 'componentId is required'),
+  signalId: z.string().min(1, 'signalId is required'), // Unique hash or UUID
   componentType: z.enum(['API', 'RDBMS', 'CACHE', 'QUEUE', 'NOSQL', 'MCP'], {
     errorMap: () => ({ message: 'componentType must be one of: API, RDBMS, CACHE, QUEUE, NOSQL, MCP' }),
   }),

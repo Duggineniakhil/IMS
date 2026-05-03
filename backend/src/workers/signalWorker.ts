@@ -35,6 +35,7 @@ export function createSignalWorker(): Worker {
       const mongoDoc = await withRetry(async () => {
         return await RawSignalModel.create({
           componentId: signal.componentId,
+          signalId: signal.signalId,
           componentType: signal.componentType,
           errorCode: signal.errorCode,
           latencyMs: signal.latencyMs,

@@ -6,6 +6,7 @@ import mongoose, { Schema, Document } from 'mongoose';
  */
 export interface IRawSignal extends Document {
   componentId: string;
+  signalId: string;
   componentType: 'API' | 'RDBMS' | 'CACHE' | 'QUEUE' | 'NOSQL' | 'MCP';
   errorCode: string;
   latencyMs: number;
@@ -17,6 +18,7 @@ export interface IRawSignal extends Document {
 const RawSignalSchema = new Schema<IRawSignal>(
   {
     componentId: { type: String, required: true, index: true },
+    signalId: { type: String, required: true, unique: true },
     componentType: {
       type: String,
       required: true,

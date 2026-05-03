@@ -18,6 +18,13 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
     return current <= 100; // max 100 requests per second per IP
   };
 
+  // Redis Idempotency Check (prevents duplicates)
+  const isDuplicate = async (signalId: string): Promise<boolean> => {
+    const key = `idempotency:${signalId}`;
+    const result = await redis.set(key, '1', 'EX', 3600, 'NX'); // 1 hour window
+    return result === null; // If null, it already exists
+  };
+
   /**
    * POST /api/signals
    */
@@ -34,6 +41,15 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
 
         // Validate payload with Zod
         const validated = SignalPayloadSchema.parse(request.body);
+
+        // Idempotency check
+        if (await isDuplicate(validated.signalId)) {
+          return reply.status(409).send({ 
+            status: 'error', 
+            message: 'Duplicate signal detected',
+            signalId: validated.signalId 
+          });
+        }
 
         // Enqueue signal (non-blocking)
         await signalQueue.add('process-signal', validated, {
@@ -81,18 +97,24 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
         });
       }
 
-      const validJobs = signals.map((signal, idx) => {
+      const validJobs: any[] = [];
+      
+      for (const signal of signals) {
         try {
           const validated = SignalPayloadSchema.parse(signal);
-          return {
-            name: 'process-signal',
-            data: validated,
-            opts: { priority: validated.componentType === 'RDBMS' ? 1 : 3 },
-          };
+          
+          // Only add if not a duplicate
+          if (!(await isDuplicate(validated.signalId))) {
+            validJobs.push({
+              name: 'process-signal',
+              data: validated,
+              opts: { priority: validated.componentType === 'RDBMS' ? 1 : 3 },
+            });
+          }
         } catch {
-          return null;
+          // Skip invalid signals
         }
-      }).filter(Boolean) as any[];
+      }
 
       // Push in controlled micro-batches of 50 max
       const CHUNK_SIZE = 50;
@@ -103,7 +125,7 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
 
       return reply.status(202).send({
         status: 'accepted',
-        message: `${validJobs.length}/${signals.length} signals queued`,
+        message: `${validJobs.length}/${signals.length} unique signals queued`,
         timestamp: new Date().toISOString(),
       });
     }
