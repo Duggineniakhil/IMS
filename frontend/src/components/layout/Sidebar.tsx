@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
-  { path: '/', icon: '📊', label: 'Dashboard' },
+  { path: '/dashboard', icon: '📊', label: 'Dashboard' },
   { path: '/incidents', icon: '🔥', label: 'Incidents' },
   { path: '/simulate', icon: '⚡', label: 'Simulate' },
 ];
