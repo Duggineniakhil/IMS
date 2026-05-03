@@ -103,6 +103,7 @@ describe('RCA Validation', () => {
     it('should accept valid signal payload', () => {
       const result = SignalPayloadSchema.safeParse({
         componentId: 'RDBMS_PRIMARY',
+        signalId: 'sig_123',
         componentType: 'RDBMS',
         errorCode: 'CONN_TIMEOUT',
         latencyMs: 3500,
@@ -113,6 +114,7 @@ describe('RCA Validation', () => {
 
     it('should reject signal with missing componentId', () => {
       const result = SignalPayloadSchema.safeParse({
+        signalId: 'sig_123',
         componentType: 'RDBMS',
         errorCode: 'CONN_TIMEOUT',
         latencyMs: 3500,
@@ -123,6 +125,7 @@ describe('RCA Validation', () => {
     it('should reject signal with invalid componentType', () => {
       const result = SignalPayloadSchema.safeParse({
         componentId: 'TEST',
+        signalId: 'sig_123',
         componentType: 'INVALID',
         errorCode: 'ERROR',
         latencyMs: 100,
@@ -133,6 +136,7 @@ describe('RCA Validation', () => {
     it('should reject signal with negative latencyMs', () => {
       const result = SignalPayloadSchema.safeParse({
         componentId: 'TEST',
+        signalId: 'sig_123',
         componentType: 'API',
         errorCode: 'ERROR',
         latencyMs: -100,
