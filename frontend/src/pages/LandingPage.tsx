@@ -129,7 +129,37 @@ export function LandingPage() {
           <div style={{ flex: 1, background: 'linear-gradient(135deg, #F5F3FF, #EDE9FE)', padding: 'clamp(20px, 4vw, 40px)', borderRadius: '32px', border: '1px solid rgba(110,86,207,0.1)', width: '100%' }}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
               <h3 style={{ fontWeight: 700, marginBottom: '16px', fontSize: '15px' }}>Top Incident causes in January 2024</h3>
-              <div style={{ height: '120px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '16px' }}></div>
+              <div style={{ height: '120px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <svg width="100%" height="100%" viewBox="0 0 300 120" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="gradientLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="var(--brand)" stopOpacity="0.2" />
+                      <stop offset="50%" stopColor="var(--p0)" stopOpacity="1" />
+                      <stop offset="100%" stopColor="var(--brand)" stopOpacity="0.2" />
+                    </linearGradient>
+                  </defs>
+                  <line x1="0" y1="30" x2="300" y2="30" stroke="var(--border-subtle)" strokeDasharray="4 4" />
+                  <line x1="0" y1="60" x2="300" y2="60" stroke="var(--border-subtle)" strokeDasharray="4 4" />
+                  <line x1="0" y1="90" x2="300" y2="90" stroke="var(--border-subtle)" strokeDasharray="4 4" />
+                  <path 
+                    d="M0,90 L60,90 L75,40 L90,100 L110,20 L130,90 L160,90 L180,60 L200,90 L300,90" 
+                    fill="none" 
+                    stroke="url(#gradientLine)" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <animate attributeName="d" 
+                      values="M0,90 L60,90 L75,40 L90,100 L110,20 L130,90 L160,90 L180,60 L200,90 L300,90; M0,90 L40,90 L55,30 L70,110 L90,10 L110,90 L180,90 L200,50 L220,90 L300,90; M0,90 L60,90 L75,40 L90,100 L110,20 L130,90 L160,90 L180,60 L200,90 L300,90" 
+                      dur="3s" repeatCount="indefinite" />
+                  </path>
+                  <circle cx="110" cy="20" r="4" fill="var(--p0)">
+                    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="20;10;20" dur="3s" repeatCount="indefinite" />
+                    <animate attributeName="cx" values="110;90;110" dur="3s" repeatCount="indefinite" />
+                  </circle>
+                </svg>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#F9FAFB', borderRadius: '8px', fontSize: '12px' }}>
                   <span>Check log analysis</span>

@@ -8,7 +8,7 @@ interface HeaderProps {
 export function Header({ title, subtitle }: HeaderProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const stored = localStorage.getItem('ims-theme');
-    return (stored as 'light' | 'dark') || 'dark';
+    return (stored as 'light' | 'dark') || 'light';
   });
 
   useEffect(() => {

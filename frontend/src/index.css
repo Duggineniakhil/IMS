@@ -252,12 +252,16 @@ body {
   font-size: 16px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  width: 0;
+  overflow: hidden;
+  transition: opacity var(--transition-fast), width var(--transition-fast);
   color: var(--text-primary);
 }
 
 .sidebar.expanded .logo-text {
   opacity: 1;
+  width: auto;
+  margin-left: 12px;
 }
 
 .sidebar-nav {
