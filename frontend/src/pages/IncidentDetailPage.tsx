@@ -61,7 +61,7 @@ export function IncidentDetailPage() {
           <div className="empty-state">
             <div className="empty-state-icon">❌</div>
             <div className="empty-state-title">Incident not found</div>
-            <button className="btn btn-secondary" onClick={() => navigate('/')}>
+            <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
               ← Back to Dashboard
             </button>
           </div>
@@ -81,7 +81,7 @@ export function IncidentDetailPage() {
       <div className="page-container">
         <button
           className="btn btn-ghost btn-sm"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/dashboard')}
           style={{ marginBottom: '16px' }}
         >
           ← Back to Dashboard
