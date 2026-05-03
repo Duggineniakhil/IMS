@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import './LandingPage.css';
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -13,14 +14,7 @@ export function LandingPage() {
       overflowX: 'hidden'
     }}>
       {/* Navbar */}
-      <nav style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '24px 48px',
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
+      <nav className="landing-nav">
         <div style={{ fontWeight: 800, fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ 
             width: '28px', height: '28px', 
@@ -32,20 +26,17 @@ export function LandingPage() {
         </div>
         <div style={{ display: 'flex', gap: '32px', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>
           <span style={{ cursor: 'pointer', color: 'var(--text-primary)' }}>Home</span>
-          <span style={{ cursor: 'pointer' }}>Products</span>
-          <span style={{ cursor: 'pointer' }}>Resources</span>
-          <span style={{ cursor: 'pointer' }}>Pricing</span>
         </div>
       </nav>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
         {/* Hero Section */}
-        <div style={{ textAlign: 'center', marginTop: '80px', marginBottom: '80px' }}>
+        <div style={{ textAlign: 'center', marginTop: 'clamp(40px, 8vw, 80px)', marginBottom: 'clamp(40px, 8vw, 80px)' }}>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             style={{ 
-            fontSize: 'clamp(48px, 6vw, 72px)', 
+            fontSize: 'clamp(40px, 8vw, 72px)', 
             fontWeight: 800, 
             lineHeight: 1.1,
             letterSpacing: '-0.03em',
@@ -58,7 +49,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            className="landing-hero-buttons">
             <button className="btn" style={{ 
               background: 'white', 
               color: 'var(--brand)', 
@@ -75,9 +66,9 @@ export function LandingPage() {
         </div>
 
         {/* Backed by the best */}
-        <div style={{ textAlign: 'center', marginBottom: '100px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(60px, 10vw, 100px)' }}>
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '24px' }}>Backed by the best engineers</p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', opacity: 0.6, filter: 'grayscale(100%)' }}>
+          <div className="landing-logos">
             {['Meta', 'Square', 'Robinhood', 'Stripe', 'Okta', 'Vercel'].map(company => (
               <span key={company} style={{ fontWeight: 700, fontSize: '18px' }}>{company}</span>
             ))}
@@ -85,8 +76,8 @@ export function LandingPage() {
         </div>
 
         {/* Common Challenges */}
-        <div style={{ textAlign: 'center', marginBottom: '120px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 700, marginBottom: '16px' }}>Common Challenges In Incident Handling</h2>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(60px, 12vw, 120px)' }}>
+          <h2 style={{ fontSize: 'clamp(24px, 5vw, 32px)', fontWeight: 700, marginBottom: '16px' }}>Common Challenges In Incident Handling</h2>
           <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 40px', fontSize: '15px' }}>
             Handling incidents across distributed systems leads to alert fatigue and frustrated users. A smarter approach drives faster recovery.
           </p>
@@ -108,9 +99,9 @@ export function LandingPage() {
         </div>
 
         {/* Designed For Simplicity */}
-        <div style={{ display: 'flex', gap: '64px', alignItems: 'center', marginBottom: '140px' }}>
+        <div className="landing-split-section">
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: '36px', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2 }}>Designed For<br/>Simplicity First</h2>
+            <h2 style={{ fontSize: 'clamp(28px, 6vw, 36px)', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2 }}>Designed For<br/>Simplicity First</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '15px' }}>
               Simple, modern, and so easy new engineers can use it. You are never left wondering what to do next.
             </p>
@@ -133,7 +124,7 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-          <div style={{ flex: 1, background: 'linear-gradient(135deg, #F5F3FF, #EDE9FE)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(110,86,207,0.1)' }}>
+          <div style={{ flex: 1, background: 'linear-gradient(135deg, #F5F3FF, #EDE9FE)', padding: 'clamp(20px, 4vw, 40px)', borderRadius: '32px', border: '1px solid rgba(110,86,207,0.1)', width: '100%' }}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
               <h3 style={{ fontWeight: 700, marginBottom: '16px', fontSize: '15px' }}>Top Incident causes in January 2024</h3>
               <div style={{ height: '120px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '16px' }}></div>
@@ -150,12 +141,12 @@ export function LandingPage() {
         </div>
 
         {/* Who We Work With */}
-        <div style={{ textAlign: 'center', marginBottom: '140px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 700, marginBottom: '16px' }}>Who We Work With</h2>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(60px, 14vw, 140px)' }}>
+          <h2 style={{ fontSize: 'clamp(24px, 5vw, 32px)', fontWeight: 700, marginBottom: '16px' }}>Who We Work With</h2>
           <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 48px', fontSize: '15px' }}>
             We grow with you at every stage—whether you're just starting out, scaling rapidly, or an enterprise.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+          <div className="landing-grid">
             <div style={{ background: 'white', padding: '40px 32px', borderRadius: '24px', textAlign: 'left', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
               <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Startup</h3>
               <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '40px' }}>Set out your incident management effortlessly. Designed for teams setting up their first on-call schedule.</p>
@@ -175,17 +166,10 @@ export function LandingPage() {
         </div>
 
         {/* Footer CTA */}
-        <div style={{ 
-          background: 'var(--bg-footer-gradient)', 
-          borderRadius: '40px', 
-          padding: '80px 40px', 
-          textAlign: 'center',
-          color: 'white',
-          marginBottom: '60px'
-        }}>
-          <h2 style={{ fontSize: '40px', fontWeight: 800, marginBottom: '16px' }}>Ready to Get Started?</h2>
+        <div className="landing-footer-banner">
+          <h2 style={{ fontSize: 'clamp(28px, 6vw, 40px)', fontWeight: 800, marginBottom: '16px' }}>Ready to Get Started?</h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '40px' }}>Book a personalized 1:1 demo with our technical team for a free 14-day trial.</p>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+          <div className="landing-hero-buttons">
             <button className="btn" style={{ background: 'white', color: 'black', padding: '12px 32px', fontWeight: 600 }} onClick={() => navigate('/dashboard')}>
               Enter Dashboard
             </button>
@@ -193,8 +177,8 @@ export function LandingPage() {
         </div>
 
         {/* Real Footer */}
-        <footer style={{ display: 'flex', justifyContent: 'space-between', padding: '40px 0', borderTop: '1px solid var(--border-primary)', fontSize: '13px', color: 'var(--text-tertiary)' }}>
-          <div style={{ display: 'flex', gap: '48px' }}>
+        <footer className="landing-footer-main">
+          <div className="landing-footer-links">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <strong style={{ color: 'var(--text-primary)' }}>PRODUCT</strong>
               <span>On-Call</span>
