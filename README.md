@@ -48,9 +48,6 @@ graph TB
 | **React 18** | Frontend | Component model, Suspense, concurrent features |
 | **Vite** | Bundler | Instant HMR, native ESM dev server |
 | **React Query** | Data Fetching | Auto-refetch, cache invalidation, optimistic updates |
-| **Recharts** | Charts | Composable chart components built on D3 |
-| **Framer Motion** | Animations | Physics-based animations for premium UI/UX |
-| **Server-Sent Events** | Real-time | Low-latency dashboard updates without WebSocket overhead |
 
 
 ## Project Structure

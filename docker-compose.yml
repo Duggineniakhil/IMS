@@ -57,6 +57,8 @@ services:
       REDIS_URL: redis://redis:6379
       PORT: 3001
       NODE_ENV: production
+    command: >
+      sh -c "npx prisma migrate deploy && node dist/server.js"
     depends_on:
       postgres:
         condition: service_healthy
