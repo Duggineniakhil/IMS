@@ -43,8 +43,9 @@ export function createSignalWorker(): Worker {
         });
       }, 3, 500);
 
-      // Step 2: Debounce logic using Redis
-      const debounceKey = `debounce:${signal.componentId}`;
+      // Step 2: Debounce logic using Redis with 10-second time buckets
+      const timeBucket = Math.floor(Date.now() / 10000); // 10s bucket
+      const debounceKey = `debounce:${signal.componentId}:${timeBucket}`;
       const existingWorkItemId = await redis.get(debounceKey);
 
       if (existingWorkItemId) {
@@ -105,11 +106,12 @@ export function createSignalWorker(): Worker {
           status: workItem.status,
         });
 
-        // Invalidate dashboard cache
+        // Invalidate dashboard cache and trigger real-time push
         try {
           const keys = await redis.keys('dashboard:*');
           if (keys.length > 0) await redis.del(...keys);
           await redis.del('workitems:list');
+          await redis.publish('dashboard-updates', 'refresh');
         } catch (e) {
           // Cache invalidation is non-critical
         }
@@ -119,6 +121,12 @@ export function createSignalWorker(): Worker {
       const throughputKey = 'throughput:signals';
       await redis.incr(throughputKey);
       await redis.expire(throughputKey, 5);
+
+      // Time-series aggregation sink (Signals per minute)
+      const minuteBucket = new Date().toISOString().substring(0, 16); // e.g. "2026-05-03T12:00"
+      const tsKey = `ts:signals:${minuteBucket}`;
+      await redis.incr(tsKey);
+      await redis.expire(tsKey, 60 * 60 * 24); // Keep for 24 hours
     },
     {
       connection: createRedisConnection(),

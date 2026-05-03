@@ -23,28 +23,79 @@ export class InvalidTransitionError extends Error {
 }
 
 /**
- * Valid state transition map for WorkItem lifecycle.
- * Enforces: OPEN → INVESTIGATING → RESOLVED → CLOSED
+ * Base abstract class for WorkItem State Pattern.
  */
-const VALID_TRANSITIONS: Record<Status, Status[]> = {
-  OPEN: ['INVESTIGATING'],
-  INVESTIGATING: ['RESOLVED'],
-  RESOLVED: ['CLOSED'],
-  CLOSED: [],
-};
+export abstract class BaseWorkItemState {
+  protected context: any; // Prisma WorkItem with RCA
 
-/**
- * State Machine for managing WorkItem lifecycle transitions.
- * Enforces valid transitions and validates RCA completeness before CLOSED state.
- */
+  constructor(context: any) {
+    this.context = context;
+  }
+
+  abstract transition(newStatus: Status): Promise<void>;
+
+  protected async updateStatus(newStatus: Status): Promise<void> {
+    await prisma.workItem.update({
+      where: { id: this.context.id },
+      data: { status: newStatus },
+    });
+    await WorkItemStateMachine.invalidateCache();
+    console.log(`✅ [STATE MACHINE] WorkItem ${this.context.id}: ${this.context.status} → ${newStatus}`);
+  }
+}
+
+class OpenState extends BaseWorkItemState {
+  async transition(newStatus: Status): Promise<void> {
+    if (newStatus !== 'INVESTIGATING') {
+      throw new InvalidTransitionError(this.context.status, newStatus);
+    }
+    await this.updateStatus(newStatus);
+  }
+}
+
+class InvestigatingState extends BaseWorkItemState {
+  async transition(newStatus: Status): Promise<void> {
+    if (newStatus !== 'RESOLVED') {
+      throw new InvalidTransitionError(this.context.status, newStatus);
+    }
+    await this.updateStatus(newStatus);
+  }
+}
+
+class ResolvedState extends BaseWorkItemState {
+  async transition(newStatus: Status): Promise<void> {
+    if (newStatus !== 'CLOSED') {
+      throw new InvalidTransitionError(this.context.status, newStatus);
+    }
+
+    const { rca } = this.context;
+    if (!rca) throw new IncompleteRCAError('Cannot close WorkItem: RCA is missing');
+    if (!rca.fixApplied || rca.fixApplied.trim().length === 0) throw new IncompleteRCAError('Cannot close WorkItem: fixApplied is empty');
+    if (!rca.preventionSteps || rca.preventionSteps.trim().length === 0) throw new IncompleteRCAError('Cannot close WorkItem: preventionSteps is empty');
+    if (!rca.endTime) throw new IncompleteRCAError('Cannot close WorkItem: endTime is missing');
+    if (!rca.rootCauseCategory || rca.rootCauseCategory.trim().length === 0) throw new IncompleteRCAError('Cannot close WorkItem: rootCauseCategory is empty');
+
+    await this.updateStatus(newStatus);
+  }
+}
+
+class ClosedState extends BaseWorkItemState {
+  async transition(newStatus: Status): Promise<void> {
+    throw new InvalidTransitionError(this.context.status, newStatus); // CLOSED is terminal
+  }
+}
+
 export class WorkItemStateMachine {
-  /**
-   * Transitions a WorkItem to a new status.
-   * @param workItemId - The ID of the WorkItem to transition
-   * @param newStatus - The target status
-   * @throws InvalidTransitionError if the transition is not allowed
-   * @throws IncompleteRCAError if transitioning to CLOSED without complete RCA
-   */
+  static getStateObject(context: any): BaseWorkItemState {
+    switch (context.status) {
+      case 'OPEN': return new OpenState(context);
+      case 'INVESTIGATING': return new InvestigatingState(context);
+      case 'RESOLVED': return new ResolvedState(context);
+      case 'CLOSED': return new ClosedState(context);
+      default: throw new Error('Unknown state');
+    }
+  }
+
   static async transition(workItemId: string, newStatus: Status): Promise<void> {
     const workItem = await prisma.workItem.findUnique({
       where: { id: workItemId },
@@ -55,53 +106,20 @@ export class WorkItemStateMachine {
       throw new Error(`WorkItem ${workItemId} not found`);
     }
 
-    // Validate transition
-    const allowedTransitions = VALID_TRANSITIONS[workItem.status];
-    if (!allowedTransitions.includes(newStatus)) {
-      throw new InvalidTransitionError(workItem.status, newStatus);
-    }
-
-    // Validate RCA completeness for CLOSED transition
-    if (newStatus === 'CLOSED') {
-      if (!workItem.rca) {
-        throw new IncompleteRCAError('Cannot close WorkItem: RCA is missing');
-      }
-      if (!workItem.rca.fixApplied || workItem.rca.fixApplied.trim().length === 0) {
-        throw new IncompleteRCAError('Cannot close WorkItem: fixApplied is empty');
-      }
-      if (!workItem.rca.preventionSteps || workItem.rca.preventionSteps.trim().length === 0) {
-        throw new IncompleteRCAError('Cannot close WorkItem: preventionSteps is empty');
-      }
-      if (!workItem.rca.endTime) {
-        throw new IncompleteRCAError('Cannot close WorkItem: endTime is missing');
-      }
-      if (!workItem.rca.rootCauseCategory || workItem.rca.rootCauseCategory.trim().length === 0) {
-        throw new IncompleteRCAError('Cannot close WorkItem: rootCauseCategory is empty');
-      }
-    }
-
-    // Update status in database
-    await prisma.workItem.update({
-      where: { id: workItemId },
-      data: { status: newStatus },
-    });
-
-    // Invalidate Redis dashboard cache
-    await WorkItemStateMachine.invalidateCache();
-
-    console.log(`✅ [STATE MACHINE] WorkItem ${workItemId}: ${workItem.status} → ${newStatus}`);
+    const stateObj = this.getStateObject(workItem);
+    await stateObj.transition(newStatus);
   }
 
-  /**
-   * Returns the valid next states for a given status.
-   */
   static getValidTransitions(currentStatus: Status): Status[] {
-    return VALID_TRANSITIONS[currentStatus] || [];
+    const map: Record<Status, Status[]> = {
+      OPEN: ['INVESTIGATING'],
+      INVESTIGATING: ['RESOLVED'],
+      RESOLVED: ['CLOSED'],
+      CLOSED: [],
+    };
+    return map[currentStatus] || [];
   }
 
-  /**
-   * Invalidates all cached dashboard data in Redis.
-   */
   static async invalidateCache(): Promise<void> {
     try {
       const keys = await redis.keys('dashboard:*');
@@ -109,6 +127,8 @@ export class WorkItemStateMachine {
         await redis.del(...keys);
       }
       await redis.del('workitems:list');
+      // PubSub event for dashboard real-time updates
+      await redis.publish('dashboard-updates', 'refresh');
     } catch (error) {
       console.error('[CACHE] Failed to invalidate cache:', error);
     }

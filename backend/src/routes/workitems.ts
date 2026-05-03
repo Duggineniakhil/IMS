@@ -227,8 +227,8 @@ export async function workItemRoutes(fastify: FastifyInstance): Promise<void> {
           });
         }
 
-        // Calculate MTTR: seconds between workItem creation and endTime
-        const mttr = Math.round((endTime.getTime() - workItem.createdAt.getTime()) / 1000);
+        // Calculate MTTR: seconds between first signal (workItem.createdAt) and RCA submission time (Now)
+        const mttr = Math.round((Date.now() - workItem.createdAt.getTime()) / 1000);
 
         const rca = await prisma.rCA.upsert({
           where: { workItemId: id },

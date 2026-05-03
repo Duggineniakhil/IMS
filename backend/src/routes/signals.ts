@@ -3,15 +3,23 @@ import { signalQueue } from '../queues/signalQueue';
 import { SignalPayloadSchema, SignalPayload } from '../schemas/validation';
 import { ZodError } from 'zod';
 
+import { redis } from '../config/redis';
+
 /**
  * Signal ingestion API routes.
  * POST /api/signals — Accepts signal payloads and enqueues for async processing.
  */
 export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
+  // Simple Redis Fixed-Window Rate Limiter
+  const checkRateLimit = async (ip: string): Promise<boolean> => {
+    const key = `ratelimit:${ip}`;
+    const current = await redis.incr(key);
+    if (current === 1) await redis.expire(key, 1); // 1 second window
+    return current <= 100; // max 100 requests per second per IP
+  };
+
   /**
    * POST /api/signals
-   * Ingests a signal payload, validates it, and enqueues it for processing.
-   * Returns 202 Accepted immediately — never awaits DB inside the request handler.
    */
   fastify.post(
     '/api/signals',
@@ -20,6 +28,10 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
       reply: FastifyReply
     ) => {
       try {
+        if (!(await checkRateLimit(request.ip))) {
+          return reply.status(429).send({ error: 'Too Many Requests' });
+        }
+
         // Validate payload with Zod
         const validated = SignalPayloadSchema.parse(request.body);
 
@@ -56,6 +68,10 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
       request: FastifyRequest<{ Body: SignalPayload[] }>,
       reply: FastifyReply
     ) => {
+      if (!(await checkRateLimit(request.ip))) {
+        return reply.status(429).send({ error: 'Too Many Requests' });
+      }
+
       const signals = request.body;
 
       if (!Array.isArray(signals)) {
@@ -65,7 +81,7 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
         });
       }
 
-      const jobs = signals.map((signal, idx) => {
+      const validJobs = signals.map((signal, idx) => {
         try {
           const validated = SignalPayloadSchema.parse(signal);
           return {
@@ -76,15 +92,18 @@ export async function signalRoutes(fastify: FastifyInstance): Promise<void> {
         } catch {
           return null;
         }
-      }).filter(Boolean);
+      }).filter(Boolean) as any[];
 
-      if (jobs.length > 0) {
-        await signalQueue.addBulk(jobs as any);
+      // Push in controlled micro-batches of 50 max
+      const CHUNK_SIZE = 50;
+      for (let i = 0; i < validJobs.length; i += CHUNK_SIZE) {
+        const chunk = validJobs.slice(i, i + CHUNK_SIZE);
+        await signalQueue.addBulk(chunk);
       }
 
       return reply.status(202).send({
         status: 'accepted',
-        message: `${jobs.length}/${signals.length} signals queued`,
+        message: `${validJobs.length}/${signals.length} signals queued`,
         timestamp: new Date().toISOString(),
       });
     }
