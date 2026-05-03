@@ -21,7 +21,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   };
 
   return (
-    <header className="header-bar">
+    <header className="header-bar" style={{ background: 'transparent', borderBottom: 'none' }}>
       <div className="header-left">
         <div>
           <h1 className="header-title">{title}</h1>
