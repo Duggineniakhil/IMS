@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model WorkItem {
+  id          String   @id @default(uuid())
+  componentId String
+  status      Status   @default(OPEN)
+  priority    Priority
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  rca         RCA?
+  signals     Signal[]
+}
+
+model RCA {
+  id                String   @id @default(uuid())
+  workItemId        String   @unique
+  workItem          WorkItem @relation(fields: [workItemId], references: [id])
+  startTime         DateTime
+  endTime           DateTime
+  rootCauseCategory String
+  fixApplied        String
+  preventionSteps   String
+  mttr              Int      // seconds
+  createdAt         DateTime @default(now())
+}
+
+model Signal {
+  id            String   @id @default(uuid())
+  workItemId    String
+  workItem      WorkItem @relation(fields: [workItemId], references: [id])
+  mongoSignalId String
+  createdAt     DateTime @default(now())
+}
+
+enum Status {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  P0
+  P1
+  P2
+  P3
+}
