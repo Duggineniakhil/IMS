@@ -10,6 +10,8 @@ export function LandingPage() {
     <div style={{ 
       background: 'var(--bg-hero-gradient)', 
       minHeight: '100vh', 
+      width: '100%',
+      flex: 1,
       color: 'var(--text-primary)',
       overflowX: 'hidden'
     }}>
